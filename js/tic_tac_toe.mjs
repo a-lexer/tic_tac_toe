@@ -3,12 +3,16 @@ import { WebSocket, WebSocketServer } from 'ws';
 import EventEmitter from 'events';
 
 
+
+
+
+
 const board = [['_', '_', '_'], ['_', '_', '_'], ['_', '_', '_']]
 
 
 // a player's turn is the message id modulo player count
 let message_id = 0;
-
+let player_id = 0;
 
 /**
  * @param {*} board 
@@ -19,6 +23,16 @@ function displayBoard(board) {
     }
 }
 
+const game = new EventEmitter();
+game.on("move", (moveMessage) => {
+    console.log("got message move ", moveMessage);
+    let move = parseMove(moveMessage);
+    applyMove(move);
+    game.emit("draw");
+})
+game.on("draw", () => {
+    displayBoard(board);
+})
 
 /**
  * 
@@ -50,8 +64,7 @@ function applyMove(move) {
 }
 
 
-const myEmitter = new EventEmitter();
-myEmitter.on("name", () => { })
+
 
 
 const rl = readline.createInterface({
@@ -76,6 +89,8 @@ wss.on('connection', (ws) => {
     // const metadata = { id, color };
     // clients.set(ws, metadata);
     ws.on('message', (messageAsString) => {
+        let parsedMessage = JSON.parse(Buffer.from(messageAsString).toString('utf8'))
+        game.emit(parsedMessage.eventName, parsedMessage.value);
         console.log('received messages', JSON.parse(Buffer.from(messageAsString).toString('utf8'))
         )
     })
@@ -86,8 +101,6 @@ wss.on('connection', (ws) => {
  * main game loop
  */
 while (true) {
-
-    displayBoard(board)
 
     /**
      * Accept user input
@@ -103,14 +116,6 @@ while (true) {
     const promises = [userMove];
 
     await Promise.any(promises).then((value) => {
-        let parsedMove = parseMove(value.move);
-        console.log(parsedMove);
-        console.log(validateMove(parsedMove));
-        if (validateMove(parsedMove).valid) {
-            applyMove(parsedMove);
-
-        } else {
-            console.log('Invalid move');
-        }
+        game.emit("move", value.move)
     });
 }
