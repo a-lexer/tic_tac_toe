@@ -3,6 +3,8 @@ import { WebSocket, WebSocketServer } from 'ws';
 import EventEmitter from 'events';
 
 
+const DEBUG = false;
+
 let board = []
 
 let is_server = false;
@@ -41,6 +43,7 @@ let turn = 0;
  * @param {*} board 
  */
 function displayBoard(board) {
+    if (!DEBUG) console.clear();
     for (let row of board) {
         console.log(row.join(" "))
     }
@@ -48,15 +51,21 @@ function displayBoard(board) {
 
 const game = new EventEmitter();
 game.on("move", (moveMessage) => {
-    console.log("got move message: ", moveMessage);
+    /**
+     * Every time there is a move we:
+     * 1. Parse it
+     * 2. Check that it's valid
+     * 3. Apply it to the local board
+     * 4. Send the move to the remote board
+     */
     let move = parseMove(moveMessage);
     if (!moveIsValid(move)) {
         console.log("invalid move");
         return;
     }
-    applyMove(move);
+    applyMove(move, turn % 2 == 0 ? 'X' : "O");
     game.emit("draw");
-    game.emit("switchTurn");
+    game.emit("switchTurn", move);
 });
 
 game.on("makeMove", () => {
@@ -96,8 +105,8 @@ function moveIsValid(move) {
 }
 
 
-function applyMove(move) {
-    board[move.row][move.column] = turn % 2 == 0 ? 'X' : "O";
+function applyMove(move, pc) {
+    board[move.row][move.column] = pc;
 }
 
 
@@ -120,31 +129,41 @@ if (is_server) {
         clients.set(ws, metadata);
         ws.on('message', (messageAsString) => {
             let parsedMessage = JSON.parse(Buffer.from(messageAsString).toString('utf8'))
-            game.emit(parsedMessage.eventName, parsedMessage.value);
-            console.log('received messages', JSON.parse(Buffer.from(messageAsString).toString('utf8'))
-            )
+            game.emit(parsedMessage.message, JSON.stringify(parsedMessage));
+            displayBoard(board);
         })
         ws.send(JSON.stringify({ message: 'init', value: board }))
     });
 
 
 }
-game.local
-game.on("switchTurn", () => {
+
+
+game.on("switchTurn", (move) => {
     let tmp_turn = (turn + 1) % (clients.size + 1);
-    console.log("tmp turn is ", tmp_turn);
-    game.emit("updateTurnValue", tmp_turn.toString());
+    // console.log("tmp turn is ", tmp_turn);
+    game.emit("updateTurnValue", JSON.stringify({ s: tmp_turn.toString(), move }));
     // emit on websocket for client the switchturn event, which
     // will increment their turn counter
     // and then allow them to make a move
 })
 
 game.on("updateTurnValue", (turn_str) => {
-    turn = parseInt(turn_str);
-    for (let client of clients.keys()) {
-        console.log("sending turn string: ", turn_str);
-        client.send(JSON.stringify({ message: "updateTurnValue", value: turn }));
+    if (!is_server) {
+        return;
     }
+    let x = JSON.parse(turn_str);
+    turn = parseInt(x.s);
+    for (let client of clients.keys()) {
+        client.send(JSON.stringify({ message: "updateTurnValue", value: turn, move: x.move }));
+    }
+})
+
+game.on("updateTurnValueServer", (s) => {
+    let x = JSON.parse(s);
+    applyMove(x.move, 'O')
+    turn = 0;
+    game.emit("breakLoop");
 })
 
 
@@ -156,21 +175,23 @@ if (!is_server) {
     });
 
     game.on("updateTurnValue", (turn_str) => {
-        ws.send(JSON.stringify({ message: "updateTurnValue", value: turn }));
+        let json = JSON.parse(turn_str);
+        ws.send(JSON.stringify({ message: "updateTurnValueServer", value: turn, move: json.move }));
     })
 
     ws.on('message', function message(data) {
         let parsedData = JSON.parse(data);
         switch (parsedData.message) {
             case "updateTurnValue": turn = parsedData.value;
+                applyMove(parsedData.move, 'X')
                 game.emit("breakLoop");
+                game.emit("draw");
                 break;
             case "init": board = parsedData.value;
                 displayBoard(board);
                 break;
         }
-        console.log('received: %s', parsedData);
-        console.log(`turn is ${turn} and player_id is ${player_id}`);
+        displayBoard(board);
     });
 
 }
@@ -183,13 +204,12 @@ while (true) {
     /**
      * Accept user input as it is a player's turn
     */
-    console.log(`in game loop as ${player_id} and turn ${turn}`);
+    // console.log(`in game loop as ${player_id} and turn ${turn}`);
     if (player_id === turn) {
-        console.log(`player id is ${player_id} and turn is ${turn} and argv ${process.argv}`)
         const userMove = new Promise((resolve) => rl.question("What is your move? ", function (move) {
             resolve({ move: move });
             rl.on("close", function () {
-                console.log("\nBYE BYE !!!");
+                console.log("\nExiting.");
                 process.exit(0);
             });
         }));
@@ -199,12 +219,10 @@ while (true) {
         });
     } else {
         /**
-         * Wait until we get a move message from the other player
+         * Wait until something breaks us out of this loop. Probably a client message handled elsewhere.
          */
-        console.log('waiting for an update on turn value to break to input')
         await new Promise((resolve) => {
             game.on("breakLoop", () => {
-                console.log('resolved on breakLook')
                 resolve();
             })
         })
