@@ -104,8 +104,8 @@ while (true) {
 
     await Promise.any(promises).then((value) => {
         let parsedMove = parseMove(value.move);
-        // console.log(parsedMove);
-        // console.log(validateMove(parsedMove));
+        console.log(parsedMove);
+        console.log(validateMove(parsedMove));
         if (validateMove(parsedMove).valid) {
             applyMove(parsedMove);
 
