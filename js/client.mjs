@@ -2,7 +2,7 @@ import { WebSocket } from 'ws';
 
 const ws = new WebSocket('ws://localhost:8080');
 
-
+let board = []
 let turn = 0;
 
 ws.on('open', function open() {
@@ -13,6 +13,9 @@ ws.on('message', function message(data) {
   let parsedData = JSON.parse(data);
   switch (parsedData.message) {
     case "updateTurnValue": turn = parsedData.value;
+      ws.send(JSON.stringify({ eventName: 'move', value: 'A0' }));
+      break;
+    case "init": board = parsedData.value;
       break;
   }
   console.log('received: %s', parsedData);
