@@ -52,8 +52,16 @@ let turn = 0;
  */
 function displayBoard(board) {
     if (!DEBUG) { console.clear() };
+    let leftChar = 97;
+    let acc = "  ";
+    let i = 0;
+    for (let _ of board) {
+        acc += (i.toString() + ' ');
+        i = i + 1;
+    }
+    console.log(acc);
     for (let row of board) {
-        console.log(row.join(" "))
+        console.log(String.fromCharCode(leftChar++), row.join(" "))
     }
 }
 
