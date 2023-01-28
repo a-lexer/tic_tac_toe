@@ -43,7 +43,7 @@ let turn = 0;
  * @param {*} board 
  */
 function displayBoard(board) {
-    if (!DEBUG) console.clear();
+    if (!DEBUG) { console.clear() };
     for (let row of board) {
         console.log(row.join(" "))
     }
@@ -149,11 +149,12 @@ game.on("switchTurn", (move) => {
 })
 
 game.on("updateTurnValue", (turn_str) => {
+
+    let x = JSON.parse(turn_str);
+    turn = parseInt(x.s);
     if (!is_server) {
         return;
     }
-    let x = JSON.parse(turn_str);
-    turn = parseInt(x.s);
     for (let client of clients.keys()) {
         client.send(JSON.stringify({ message: "updateTurnValue", value: turn, move: x.move }));
     }
@@ -204,7 +205,7 @@ while (true) {
     /**
      * Accept user input as it is a player's turn
     */
-    // console.log(`in game loop as ${player_id} and turn ${turn}`);
+    console.log(`in game loop as ${player_id} and turn ${turn}`);
     if (player_id === turn) {
         const userMove = new Promise((resolve) => rl.question("What is your move? ", function (move) {
             resolve({ move: move });
@@ -223,6 +224,7 @@ while (true) {
          */
         await new Promise((resolve) => {
             game.on("breakLoop", () => {
+                console.log(`breaking loop on ${player_id} for turn ${turn}`)
                 resolve();
             })
         })
