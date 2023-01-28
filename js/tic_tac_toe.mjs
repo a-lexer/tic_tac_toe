@@ -205,7 +205,7 @@ while (true) {
     /**
      * Accept user input as it is a player's turn
     */
-    console.log(`in game loop as ${player_id} and turn ${turn}`);
+    // console.log(`in game loop as ${player_id} and turn ${turn}`);
     if (player_id === turn) {
         const userMove = new Promise((resolve) => rl.question("What is your move? ", function (move) {
             resolve({ move: move });
@@ -224,7 +224,6 @@ while (true) {
          */
         await new Promise((resolve) => {
             game.on("breakLoop", () => {
-                console.log(`breaking loop on ${player_id} for turn ${turn}`)
                 resolve();
             })
         })
