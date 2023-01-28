@@ -1,20 +1,28 @@
 import readline from 'readline';
 import { WebSocket, WebSocketServer } from 'ws';
 import EventEmitter from 'events';
+import { parseArgs } from './utils.mjs';
 
-
+/**
+ * Disables console clearing and enables various other statements.
+ */
 const DEBUG = false;
 
+/**
+ * 2D array.
+ */
 let board = []
 
 let is_server = false;
 
-if (process.argv[2]) {
+let parsedArguments = parseArgs(process.argv);
+if (parsedArguments.get("server") === 'true') {
     // we have a board size
-    board = createBoard(process.argv[2])
+    board = createBoard(parsedArguments.get("board_size"))
     // we'll say a server is whatever creates a board from arguments
     is_server = true;
 }
+
 
 /**
  * Creates a board of size * size
@@ -117,10 +125,11 @@ const rl = readline.createInterface({
 
 const clients = new Map();
 
+/**
+ * Server logic
+ */
 if (is_server) {
     const wss = new WebSocketServer({ port: 8080 });
-
-
     wss.on('connection', (ws) => {
         // const id = ++player_id;
         const id = 1
@@ -134,8 +143,6 @@ if (is_server) {
         })
         ws.send(JSON.stringify({ message: 'init', value: board }))
     });
-
-
 }
 
 
@@ -148,10 +155,15 @@ game.on("switchTurn", (move) => {
     // and then allow them to make a move
 })
 
-game.on("updateTurnValue", (turn_str) => {
 
+game.on("updateTurnValue", (turn_str) => {
     let x = JSON.parse(turn_str);
     turn = parseInt(x.s);
+    /**
+     * A client has no other clients.
+     * Todo: make server a 'client' of the client, they are in theory equal in terms of the game.
+     * The server was not necessarily intended to be a source of truth as we do not care about cheating in this game etc.
+     */
     if (!is_server) {
         return;
     }
@@ -167,7 +179,9 @@ game.on("updateTurnValueServer", (s) => {
     game.emit("breakLoop");
 })
 
-
+/**
+ * Client logic
+ */
 if (!is_server) {
     const ws = new WebSocket('ws://localhost:8080');
 
@@ -197,8 +211,9 @@ if (!is_server) {
 
 }
 
+
 /**
- * main game loop
+ * main game loop for client and server
  */
 while (true) {
 
