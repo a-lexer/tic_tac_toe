@@ -57,7 +57,15 @@ function displayBoard(board) {
     }
 }
 
+
+/**
+ * The game event emitter. Remember that this is not the socket, so the game object emits and accepts messages
+ * locally only. This means that if you want to handle server events on the game emitter differently to client events,
+ * you'll probably want to create a new message name to distinguish server vs. client based on the messaged received on the web socket.
+ */
 const game = new EventEmitter();
+
+
 game.on("move", (moveMessage) => {
     /**
      * Every time there is a move we:
@@ -83,8 +91,11 @@ game.on("makeMove", () => {
 game.on("draw", () => {
     displayBoard(board);
 })
+
+/**
+ * Initial draw.
+ */
 game.emit("draw");
-game.emit("firstMove");
 
 
 
@@ -115,6 +126,11 @@ function moveIsValid(move) {
 
 function applyMove(move, pc) {
     board[move.row][move.column] = pc;
+}
+
+/** Check for a win state */
+function checkWin() {
+    // todo
 }
 
 
