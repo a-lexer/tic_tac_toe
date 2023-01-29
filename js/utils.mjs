@@ -4,6 +4,26 @@
  * everything from scratch in any real world scenario.
  */
 
+const TYPES = {
+    'bool': (s) => {
+        if (typeof s === 'string') {
+            switch (s.toLowerCase()) {
+                case "true": return true;
+                case "false": return false;
+                default: console.error(`ERROR: argument should be bool but it is ${s}`)
+            }
+        }
+    },
+    'int': (s) => {
+        try {
+            return parseInt(s);
+        } catch (e) {
+            console.error(`ERROR: not passed an int, was ${s}`)
+        }
+    }
+}
+
+
 /**
  * Parses an argument array
  * Assumes arguments are in form: arg_n=val_n

@@ -16,8 +16,8 @@ let board = []
 let is_server = false;
 
 let argParser = ArgumentParser({ prog: 'Tic-Tac-Toe', description: 'A 2 player Tic-Tac-Toe terminal app over web sockets', epilog: '_' })
-argParser.add_argument({ name: 'server', description: 'whether or not this is the server app', required: false })
-argParser.add_argument({ name: 'board_size', description: 'value of n for n * n board size', required: false })
+argParser.add_argument({ name: 'server', description: 'whether or not this is the server app', required: false, type: 'bool' })
+argParser.add_argument({ name: 'board_size', description: 'value of n for n * n board size', required: false, type: 'int' })
 let parsedArguments = argParser.parse_args();
 
 
