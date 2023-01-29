@@ -15,11 +15,9 @@ const TYPES = {
         }
     },
     'int': (s) => {
-        try {
-            return parseInt(s);
-        } catch (e) {
-            console.error(`ERROR: not passed an int, was ${s}`)
-        }
+        let maybeInt = parseInt(s);
+        if (Number.isNaN(maybeInt)) console.error(`ERROR: not passed an int, was ${s}`);
+        return maybeInt;
     }
 }
 
@@ -51,15 +49,28 @@ function parseArgs(argv) {
 
 
 /**
+ * Validates the types of the args.
+ * @param {*} parsedArgs 
+ * @param {*} argOptions 
+ */
+function typedArgs(parsedArgs, argOptions) {
+    parsedArgs.forEach((val, key) => {
+        parsedArgs.set(key, TYPES[argOptions.get(key).type](val))
+    });
+    return parsedArgs;
+}
+
+
+/**
  * Inspired by Python's argparse module
  * @param {} param0 
  */
 function ArgumentParser({ prog, description, epilog }) {
 
-    let args_options = [];
+    let args_options = new Map();
 
-    function add_argument({ name, description, required }) {
-        args_options.push({ name, description, required })
+    function add_argument({ name, description, required, type }) {
+        args_options.set(name, { name, description, required, type })
     }
 
     function print_arguments() {
@@ -67,7 +78,7 @@ function ArgumentParser({ prog, description, epilog }) {
     }
 
     function display_help() {
-        console.log(`usage: ${process.argv[1]} ${args_options.map(v => v.required ? v.name + '=<value>' : '[' + v.name + '=<value>]')}`)
+        console.log(`usage: ${process.argv[1]} ${Array.from(args_options).map(v => v.required ? v.name + '=<value>' : '[' + v.name + '=<value>]')}`)
     }
 
     function parse_args(overrideArgs) {
@@ -76,8 +87,8 @@ function ArgumentParser({ prog, description, epilog }) {
             display_help();
             process.exit(0);
         }
-        if (args_options.filter(val => val.required).every((val) => parsedArgs.has(val.name))) {
-            return parsedArgs;
+        if (Array.from(args_options).map(v => v[1]).filter(val => val.required).every((val) => parsedArgs.has(val.name))) {
+            return typedArgs(parsedArgs, args_options);
         }
         console.error(`ERROR: missing the following required arguments: ${args_options.filter(val => val.required && !parsedArgs.has(val.name)).map(v => ' ' + v.name)}`);
         process.exit(1);

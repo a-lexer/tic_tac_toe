@@ -20,8 +20,7 @@ argParser.add_argument({ name: 'server', description: 'whether or not this is th
 argParser.add_argument({ name: 'board_size', description: 'value of n for n * n board size', required: false, type: 'int' })
 let parsedArguments = argParser.parse_args();
 
-
-if (parsedArguments.get("server") === 'true') {
+if (parsedArguments.get("server")) {
     board = createBoard(parsedArguments.get("board_size"))
     is_server = true;
 }
