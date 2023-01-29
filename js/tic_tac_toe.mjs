@@ -127,7 +127,7 @@ function parseMove(move) {
  * @returns 
  */
 function moveIsValid(move) {
-    if (move.row >= board[0].length || move.column >= board[0].length || move.row < 0 || move.column < 0) {
+    if (!(board[move.row][move.column] === '_') || move.row >= board[0].length || move.column >= board[0].length || move.row < 0 || move.column < 0) {
         return false
     }
     return true
