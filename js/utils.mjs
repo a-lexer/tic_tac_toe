@@ -10,14 +10,19 @@ const TYPES = {
             switch (s.toLowerCase()) {
                 case "true": return true;
                 case "false": return false;
-                default: console.error(`ERROR: argument should be bool but it is ${s}`)
+                default: throw `ERROR: argument should be bool but it is ${s}`
             }
         }
     },
     'int': (s) => {
         let maybeInt = parseInt(s);
-        if (Number.isNaN(maybeInt)) console.error(`ERROR: not passed an int, was ${s}`);
+        if (Number.isNaN(maybeInt)) throw `ERROR: not passed an int, was ${s}`;
         return maybeInt;
+    },
+    'float': (s) => {
+        let maybeFloat = parseFloat(s);
+        if (Number.isNaN(maybeFloat)) throw `ERROR: not passed a float, was ${s}`;
+        return maybeFloat;
     }
 }
 
