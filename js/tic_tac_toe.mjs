@@ -1,12 +1,12 @@
 import readline from 'readline';
 import { WebSocket, WebSocketServer } from 'ws';
 import EventEmitter from 'events';
-import { parseArgs } from './utils.mjs';
+import { ArgumentParser } from './utils.mjs';
 
 /**
  * Disables console clearing and enables various other statements.
  */
-const DEBUG = false;
+const DEBUG = process.env.DEBUG === 'true' ? true : false;
 
 /**
  * 2D array.
@@ -15,11 +15,13 @@ let board = []
 
 let is_server = false;
 
-let parsedArguments = parseArgs(process.argv);
+let argParser = ArgumentParser({ prog: 'Tic-Tac-Toe', description: 'A 2 player Tic-Tac-Toe terminal app over web sockets', epilog: '_' })
+argParser.add_argument({ name: 'server', description: 'whether or not this is the server app', required: false })
+argParser.add_argument({ name: 'board_size', description: 'value of n for n * n board size', required: false })
+let parsedArguments = argParser.parse_args();
+
 if (parsedArguments.get("server") === 'true') {
-    // we have a board size
     board = createBoard(parsedArguments.get("board_size"))
-    // we'll say a server is whatever creates a board from arguments
     is_server = true;
 }
 

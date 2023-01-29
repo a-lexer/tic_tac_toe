@@ -29,6 +29,38 @@ function parseArgs(argv) {
 }
 
 
-export { parseArgs }
+/**
+ * Inspired by Python's argparse module
+ * @param {} param0 
+ */
+function ArgumentParser({ prog, description, epilog }) {
 
-export default parseArgs;
+    let args_options = [];
+
+    function add_argument({ name, description, required }) {
+        args_options.push({ name, description, required })
+    }
+
+    function print_arguments() {
+        console.log(args_options);
+    }
+
+    function parse_args() {
+        let parsedArgs = parseArgs(process.argv);
+        if (args_options.filter(val => val.required).every((val) => parsedArgs.has(val.name))) {
+            return parsedArgs;
+        }
+        console.error("required argument(s) missing");
+        process.exit(1);
+    }
+
+    return {
+        add_argument,
+        print_arguments,
+        parse_args
+    }
+}
+
+export { ArgumentParser, parseArgs }
+
+export default ArgumentParser;
