@@ -16,6 +16,7 @@ function parseArgs(argv) {
         let leftAcc = "";
         let rightAcc = "";
         while (i < argument.length) {
+            if (argument[i] === "=" && i === 0) break;
             if (argument[i] === "=") {
                 leftAcc = argument.slice(0, i);
                 rightAcc = argument.slice(i + 1);
@@ -49,8 +50,8 @@ function ArgumentParser({ prog, description, epilog }) {
         console.log(`usage: ${process.argv[1]} ${args_options.map(v => v.required ? v.name + '=<value>' : '[' + v.name + '=<value>]')}`)
     }
 
-    function parse_args() {
-        let parsedArgs = parseArgs(process.argv);
+    function parse_args(overrideArgs) {
+        let parsedArgs = parseArgs(overrideArgs || process.argv);
         if (parsedArgs.has("--help")) {
             display_help();
             process.exit(0);
