@@ -105,6 +105,6 @@ function ArgumentParser({ prog, description, epilog }) {
     }
 }
 
-export { ArgumentParser, parseArgs }
+export { ArgumentParser, parseArgs, TYPES }
 
 export default ArgumentParser;
