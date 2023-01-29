@@ -45,8 +45,16 @@ function ArgumentParser({ prog, description, epilog }) {
         console.log(args_options);
     }
 
+    function display_help() {
+        console.log(`usage: ${process.argv[1]} ${args_options.map(v => v.required ? v.name + '=<value>' : '[' + v.name + '=<value>]')}`)
+    }
+
     function parse_args() {
         let parsedArgs = parseArgs(process.argv);
+        if (parsedArgs.has("--help")) {
+            display_help();
+            process.exit(0);
+        }
         if (args_options.filter(val => val.required).every((val) => parsedArgs.has(val.name))) {
             return parsedArgs;
         }
