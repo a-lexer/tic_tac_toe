@@ -90,8 +90,7 @@ function ArgumentParser({ prog, description, epilog }) {
         if (Array.from(args_options).map(v => v[1]).filter(val => val.required).every((val) => parsedArgs.has(val.name))) {
             return typedArgs(parsedArgs, args_options);
         }
-        console.error(`ERROR: missing the following required arguments: ${args_options.filter(val => val.required && !parsedArgs.has(val.name)).map(v => ' ' + v.name)}`);
-        process.exit(1);
+        throw `ERROR: missing the following required arguments: ${Array.from(args_options).map(v => v[1]).filter(val => val.required && !parsedArgs.has(val.name)).map(v => ' ' + v.name)}`;
     }
 
     return {
