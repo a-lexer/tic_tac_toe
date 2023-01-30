@@ -65,12 +65,13 @@ function displayBoard(board) {
     let acc = "  ";
     let i = 0;
     for (let _ of board) {
-        acc += (i.toString() + ' ');
+        acc += (`\u001b[32m${i.toString()}\u001b[0m` + ' ');
         i = i + 1;
     }
+    // \u001b[36m
     console.log(acc);
     for (let row of board) {
-        console.log(String.fromCharCode(leftChar++), row.join(" "))
+        console.log(`\u001b[36m${String.fromCharCode(leftChar++)}\u001b[0m`, row.join(" "))
     }
     for (let item of renderPipeline) {
         console.log(item);
