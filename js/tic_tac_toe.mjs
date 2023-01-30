@@ -18,6 +18,7 @@ let is_server = false;
 let argParser = ArgumentParser({ prog: 'Tic-Tac-Toe', description: 'A 2 player Tic-Tac-Toe terminal app over web sockets', epilog: '_' })
 argParser.add_argument({ name: 'server', description: 'whether or not this is the server app', required: true, type: 'bool' })
 argParser.add_argument({ name: 'board_size', description: 'value of n for n * n board size', required: false, type: 'int' })
+argParser.add_argument({ name: 'host', description: "IP of remote server", required: false, type: 'string' })
 let parsedArguments = argParser.parse_args();
 
 if (parsedArguments.get("server")) {
@@ -45,9 +46,15 @@ function createBoard(size) {
 
 
 let player_id = is_server ? 0 : 1;
+let player_character = is_server ? 'X' : 'O';
 
 // turn counter that matches player id
 let turn = 0;
+
+/**
+ * Batched events to be rendered alongside every single board render
+ */
+let renderPipeline = []
 
 /**
  * @param {*} board 
@@ -65,6 +72,10 @@ function displayBoard(board) {
     for (let row of board) {
         console.log(String.fromCharCode(leftChar++), row.join(" "))
     }
+    for (let item of renderPipeline) {
+        console.log(item);
+    }
+    renderPipeline = [];
 }
 
 
@@ -140,7 +151,17 @@ function applyMove(move, pc) {
 
 /** Check for a win state */
 function checkWin() {
-    // todo
+    // todo: DRY
+    for (let i = 0; i < board.length - 2; i++) {
+        for (let j = 0; j < board[i].length - 2; j++) {
+            if (board[i][j] === player_character && board[i][j + 1] === player_character && board[i][j + 2] === player_character) {
+                return true;
+            }
+            if (board[i][j] === player_character && board[i + 1][j] === player_character && board[i + 2][j] === player_character) {
+                return true;
+            }
+        }
+    }
 }
 
 
@@ -242,7 +263,10 @@ if (!is_server) {
  * main game loop for client and server
  */
 while (true) {
-
+    if (checkWin()) {
+        console.log(`There is a winner, and it is ${player_character}`);
+        break;
+    }
     /**
      * Accept user input as it is a player's turn
     */

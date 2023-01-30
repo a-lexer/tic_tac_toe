@@ -23,7 +23,8 @@ const TYPES = {
         let maybeFloat = parseFloat(s);
         if (Number.isNaN(maybeFloat)) throw `ERROR: not passed a float, was ${s}`;
         return maybeFloat;
-    }
+    },
+    'string': (s) => s
 }
 
 

@@ -18,6 +18,15 @@ describe('argument parsing', () => {
 });
 
 
+describe('user moves should be <letter><number> and no other string should be accepted', () => {
+  it('when parsed should reject all invalid user move strings', () => {
+    fc.assert(fc.property(fc.string(), (a) => {
+      
+    }));
+  });
+});
+
+
 describe('float argument type parsing', () => {
   // string text always contains itself
   it('when parsed should have the correct float type and not throw an error', () => {
