@@ -161,6 +161,9 @@ function checkWin() {
             if (board[i][j] === player_character && board[i + 1][j] === player_character && board[i + 2][j] === player_character) {
                 return true;
             }
+            if (board[i][j] === player_character && board[i + 1][j + 1] === player_character && board[i + 2][j + 2] === player_character) {
+                return true;
+            }
         }
     }
 }
