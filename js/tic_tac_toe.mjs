@@ -271,7 +271,7 @@ if (!is_server) {
  */
 while (true) {
     if (checkWin()) {
-        console.log(`There is a winner, and it is ${player_character}`);
+        console.log(`🎉 There is a winner, and it is ${player_character} 🥳`);
         break;
     }
     /**
@@ -301,3 +301,5 @@ while (true) {
         })
     }
 }
+
+process.exit(0);
