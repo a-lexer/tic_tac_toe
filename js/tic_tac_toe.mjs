@@ -201,6 +201,7 @@ if (is_server) {
 
 
 game.on("switchTurn", (move) => {
+    // clients.size + 1 is actually a constant
     let tmp_turn = (turn + 1) % (clients.size + 1);
     // console.log("tmp turn is ", tmp_turn);
     game.emit("updateTurnValue", JSON.stringify({ s: tmp_turn.toString(), move }));
@@ -211,8 +212,8 @@ game.on("switchTurn", (move) => {
 
 
 game.on("updateTurnValue", (turn_str) => {
-    let x = JSON.parse(turn_str);
-    turn = parseInt(x.s);
+    let turnMessage = JSON.parse(turn_str);
+    turn = parseInt(turnMessage.s);
     /**
      * A client has no other clients.
      * Todo: make server a 'client' of the client, they are in theory equal in terms of the game.
@@ -227,8 +228,8 @@ game.on("updateTurnValue", (turn_str) => {
 })
 
 game.on("updateTurnValueServer", (s) => {
-    let x = JSON.parse(s);
-    applyMove(x.move, 'O')
+    let turnMessage = JSON.parse(s);
+    applyMove(turnMessage.move, 'O')
     turn = 0;
     game.emit("breakLoop");
 })
@@ -286,6 +287,9 @@ while (true) {
                 process.exit(0);
             });
         }));
+        /**
+         * Promises.any is used for future purposes (i.e. we may be waiting on more input promises than just the move)
+         */
         const promises = [userMove];
         await Promise.any(promises).then((value) => {
             game.emit("move", value.move)
